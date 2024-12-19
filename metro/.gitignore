@@ -26,6 +26,7 @@ tags
 Makefile*
 *.prl
 *.app
+*.idx
 moc_*.cpp
 ui_*.h
 qrc_*.cpp
