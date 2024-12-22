@@ -1,5 +1,6 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
+#include <QVector>
 
 #include <QMainWindow>
 #include <QPainter>
@@ -20,11 +21,15 @@ public:
 private:
     Ui::MainWindow *ui;
 
+private:
+    QPoint ellipse_;
+    QVector<int> Stations;
+
 protected:
     void paintEvent(QPaintEvent *) override;
     void mouseReleaseEvent(QMouseEvent *event) override;
-    int getX();
-    int getY();
+    int getX(int x);
+    int getY(int y);
     void Click(int x, int y);
 };
 
