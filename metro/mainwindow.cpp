@@ -1,30 +1,68 @@
 #include "mainwindow.h"
 #include <QCursor>
 #include <QVector>
-
+// сделал климентьев олег и Поляк
 #include <QMouseEvent>
 #include "ui_mainwindow.h"
-//хуйня (конструктор класса) ниже создает то что в ней написано при старте приложения
+// (конструктор класса) ниже создает то что в ней написано при старте приложения
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
+    , isEdit(false)
+
 {
     ui->setupUi(this);
+    connect(ui->EditButton, &QPushButton::clicked, this, &MainWindow::on_EditButton_clicked);
 }
 
 QVector<int> Stations;
+void MainWindow::on_EditButton_clicked()
+{
+    qDebug() << "Кнопка нажата";
+    if (isEdit == true)
+        isEdit = false;
+    else
+        isEdit = true;
+}
+
 void MainWindow::mouseReleaseEvent(QMouseEvent *event)
 {
-    int px = event->pos().x(), py = event->pos().y();
-    qDebug() << "Real pos=" << event->pos();
-    ui->label->setText(QString("x = %1").arg(px));
-    ui->label_2->setText(QString("y = %1").arg(py));
-    ellipse_ = event->pos();
-    //int ellipseCoords [2] {px,py};
-    Stations.push_back(px);
-    Stations.push_back(py);
-    qDebug() << "Real pos=" << Stations;
-    repaint(); //или update()
+    if (isEdit == false) {
+        int px = event->pos().x(), py = event->pos().y();
+
+        ui->label->setText(QString("x = %1").arg(px));
+        ui->label_2->setText(QString("y = %1").arg(py));
+
+        Stations.push_back(px);
+        Stations.push_back(py);
+
+        repaint(); //или update()
+    } else if (isEdit == true) {
+    }
+}
+
+void MainWindow::mousePressEvent(QMouseEvent *event)
+{
+    if (isEdit == false) {
+        int px = event->pos().x(), py = event->pos().y();
+        ellipse_ = event->pos();
+        Stations.push_back(px);
+        Stations.push_back(py);
+        repaint(); //или update()
+    } else if (isEdit == true) {
+    }
+}
+
+void MainWindow::mouseMoveEvent(QMouseEvent *event)
+{
+    if (isEdit == false) {
+        int px = event->pos().x(), py = event->pos().y();
+        Stations[Stations.size() - 2] = px;
+        Stations[Stations.size() - 1] = py;
+        repaint(); //или update()
+    } else if (isEdit == true) {
+        // Перемещение станций
+    }
 }
 
 void MainWindow::paintEvent(QPaintEvent *)
@@ -49,6 +87,7 @@ void MainWindow::paintEvent(QPaintEvent *)
     }
     painter.end();
 }
+
 MainWindow::~MainWindow(){
     delete ui;
 }

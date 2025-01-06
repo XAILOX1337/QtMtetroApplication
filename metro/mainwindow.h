@@ -24,15 +24,15 @@ private:
 private:
     QPoint ellipse_;
     QVector<int> Stations;
+    bool isEdit;
 
 protected:
     void paintEvent(QPaintEvent *) override;
     void mouseReleaseEvent(QMouseEvent *event) override;
-    int getX(int x);
-    int getY(int y);
-    void Click(int x, int y);
+    virtual void mousePressEvent(QMouseEvent *);
+    virtual void mouseMoveEvent(QMouseEvent *);
+    void on_EditButton_clicked();
 };
-
 /* На всякий случай
 class Click
 {
