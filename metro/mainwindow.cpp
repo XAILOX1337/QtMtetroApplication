@@ -1,6 +1,8 @@
 #include "mainwindow.h"
 #include <QCursor>
 #include <QVector>
+#include <math.h>
+
 // сделал климентьев олег и Поляк
 #include <QMouseEvent>
 #include "ui_mainwindow.h"
@@ -18,11 +20,63 @@ MainWindow::MainWindow(QWidget *parent)
 QVector<int> Stations;
 void MainWindow::on_EditButton_clicked()
 {
-    qDebug() << "Кнопка нажата";
+    qDebug() << "Button has been pressed";
     if (isEdit == true)
         isEdit = false;
     else
         isEdit = true;
+}
+
+void MainWindow::mousePressEvent(QMouseEvent *event)
+{
+    if (!isEdit) {
+        int px = event->pos().x();
+        int py = event->pos().y();
+        ellipse_ = event->pos();
+        Stations.push_back(px);
+        Stations.push_back(py);
+        repaint(); // или update()
+    } else {
+        int px = event->pos().x();
+        int py = event->pos().y();
+
+        float minDistance = std::numeric_limits<float>::max(); // Инициализируем минимальное расстояние
+
+        for (int i = 0; i < Stations.size(); i += 2) {
+            float distance_to_click = sqrt(pow(px - Stations[i], 2) + pow(py - Stations[i + 1], 2));
+            qDebug() << "Distance to point:" << distance_to_click;
+
+            // Проверяем, является ли текущее расстояние минимальным
+            if (distance_to_click < minDistance) {
+                minDistance = distance_to_click;
+                closestIndex = i; // Сохраняем индекс ближайшей точки
+            }
+        }
+
+        if (closestIndex != -1) {
+            qDebug() << "Nearest point:" << Stations[closestIndex] << Stations[closestIndex + 1];
+            qDebug() << "min distance:" << minDistance;
+        } else {
+            qDebug() << "No points in Stations.";
+        }
+    }
+}
+
+void MainWindow::mouseMoveEvent(QMouseEvent *event)
+{
+    int px = event->pos().x(), py = event->pos().y();
+    if (isEdit == false) {
+        Stations[Stations.size() - 2] = px;
+        Stations[Stations.size() - 1] = py;
+        repaint(); //или update()
+    } else if (isEdit == true) {
+        if (minDistance <= 10 && minDistance >= 0) {
+            qDebug() << minDistance;
+            Stations[closestIndex] = px;
+            Stations[closestIndex + 1] = py;
+            repaint(); //или update()
+        }
+    }
 }
 
 void MainWindow::mouseReleaseEvent(QMouseEvent *event)
@@ -38,30 +92,6 @@ void MainWindow::mouseReleaseEvent(QMouseEvent *event)
 
         repaint(); //или update()
     } else if (isEdit == true) {
-    }
-}
-
-void MainWindow::mousePressEvent(QMouseEvent *event)
-{
-    if (isEdit == false) {
-        int px = event->pos().x(), py = event->pos().y();
-        ellipse_ = event->pos();
-        Stations.push_back(px);
-        Stations.push_back(py);
-        repaint(); //или update()
-    } else if (isEdit == true) {
-    }
-}
-
-void MainWindow::mouseMoveEvent(QMouseEvent *event)
-{
-    if (isEdit == false) {
-        int px = event->pos().x(), py = event->pos().y();
-        Stations[Stations.size() - 2] = px;
-        Stations[Stations.size() - 1] = py;
-        repaint(); //или update()
-    } else if (isEdit == true) {
-        // Перемещение станций
     }
 }
 

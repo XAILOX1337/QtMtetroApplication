@@ -25,6 +25,8 @@ private:
     QPoint ellipse_;
     QVector<int> Stations;
     bool isEdit;
+    float minDistance;
+    int closestIndex = -1;
 
 protected:
     void paintEvent(QPaintEvent *) override;
