@@ -11,6 +11,7 @@ MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
     , isEdit(false)
+    , permision(true)
 
 {
     ui->setupUi(this);
@@ -21,26 +22,23 @@ QVector<int> Stations;
 void MainWindow::on_EditButton_clicked()
 {
     qDebug() << "Button has been pressed";
-    if (isEdit == true)
-        isEdit = false;
-    else
-        isEdit = true;
+    isEdit = !isEdit; // Переключаем режим редактирования
 }
 
 void MainWindow::mousePressEvent(QMouseEvent *event)
 {
+    int px = event->pos().x();
+    int py = event->pos().y();
+
     if (!isEdit) {
-        int px = event->pos().x();
-        int py = event->pos().y();
-        ellipse_ = event->pos();
+        // Добавляем новую точку только в режиме добавления
         Stations.push_back(px);
         Stations.push_back(py);
         repaint(); // или update()
     } else {
-        int px = event->pos().x();
-        int py = event->pos().y();
-
-        float minDistance = std::numeric_limits<float>::max(); // Инициализируем минимальное расстояние
+        // В режиме редактирования ищем ближайшую точку
+        closestIndex = -1; // Сбрасываем индекс ближайшей точки
+        minDistance = 50;  // Сбрасываем минимальное расстояние
 
         for (int i = 0; i < Stations.size(); i += 2) {
             float distance_to_click = sqrt(pow(px - Stations[i], 2) + pow(py - Stations[i + 1], 2));
@@ -48,8 +46,8 @@ void MainWindow::mousePressEvent(QMouseEvent *event)
 
             // Проверяем, является ли текущее расстояние минимальным
             if (distance_to_click < minDistance) {
-                minDistance = distance_to_click;
-                closestIndex = i; // Сохраняем индекс ближайшей точки
+                minDistance = distance_to_click; // Обновляем минимальное расстояние
+                closestIndex = i;                // Сохраняем индекс ближайшей точки
             }
         }
 
@@ -64,60 +62,48 @@ void MainWindow::mousePressEvent(QMouseEvent *event)
 
 void MainWindow::mouseMoveEvent(QMouseEvent *event)
 {
-    int px = event->pos().x(), py = event->pos().y();
-    if (isEdit == false) {
-        Stations[Stations.size() - 2] = px;
-        Stations[Stations.size() - 1] = py;
-        repaint(); //или update()
-    } else if (isEdit == true) {
-        if (minDistance <= 10 && minDistance >= 0) {
-            qDebug() << minDistance;
-            Stations[closestIndex] = px;
-            Stations[closestIndex + 1] = py;
-            repaint(); //или update()
-        }
+    int px = event->pos().x();
+    int py = event->pos().y();
+    if (isEdit && closestIndex != -1) {
+        // Обновляем координаты ближайшей точки только в режиме редактирования
+        Stations[closestIndex] = px;
+        Stations[closestIndex + 1] = py;
+        repaint(); // или update()
     }
 }
 
 void MainWindow::mouseReleaseEvent(QMouseEvent *event)
 {
-    if (isEdit == false) {
+    if (!isEdit) {
         int px = event->pos().x(), py = event->pos().y();
 
         ui->label->setText(QString("x = %1").arg(px));
         ui->label_2->setText(QString("y = %1").arg(py));
 
-        Stations.push_back(px);
-        Stations.push_back(py);
+        // Добавляем новую точку только в режиме добавления
 
-        repaint(); //или update()
-    } else if (isEdit == true) {
+        repaint(); // или update()
     }
 }
 
 void MainWindow::paintEvent(QPaintEvent *)
 {
-    QPainter painter;
-    painter.begin(this);
-    //рисует кружочки и линии между ними
-    if (!ellipse_.isNull()) {
-        for (int i = 0; i < Stations.size(); i += 2) {
-            painter.setPen(QPen(QColor(79, 106, 25), 1, Qt::SolidLine, Qt::FlatCap, Qt::MiterJoin));
-            painter.setBrush(QColor(0, 100, 100));
-            painter.drawEllipse(Stations[i], Stations[i + 1], 20, 20);
-            if (i >= 2) {
-                painter.setPen(
-                    QPen(QColor(0, 100, 100), 5, Qt::SolidLine, Qt::FlatCap, Qt::MiterJoin));
-                painter.drawLine(Stations[i - 2] + 10,  //x 1-первой точки
-                                 Stations[i - 1] + 10,  //y 1-ой точки
-                                 Stations[i] + 10,      //x 2-ой точки
-                                 Stations[i + 1] + 10); //y 2-ой точки
-            }
+    QPainter painter(this);
+    // Рисуем кружочки и линии между ними
+    for (int i = 0; i < Stations.size(); i += 2) {
+        painter.setPen(QPen(QColor(79, 106, 25), 1, Qt::SolidLine, Qt::FlatCap, Qt::MiterJoin));
+        painter.setBrush(QColor(0, 100, 100));
+        painter.drawEllipse(Stations[i], Stations[i + 1], 20, 20);
+        if (i >= 2) {
+            painter.setPen(QPen(QColor(0, 100, 100), 5, Qt::SolidLine, Qt::FlatCap, Qt::MiterJoin));
+            painter.drawLine(Stations[i - 2] + 10,  // x 1-ой точки
+                             Stations[i - 1] + 10,  // y 1-ой точки
+                             Stations[i] + 10,      // x 2-ой точки
+                             Stations[i + 1] + 10); // y 2-ой точки
         }
     }
-    painter.end();
 }
-
-MainWindow::~MainWindow(){
+MainWindow::~MainWindow()
+{
     delete ui;
 }

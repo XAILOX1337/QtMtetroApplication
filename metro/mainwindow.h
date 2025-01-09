@@ -25,7 +25,8 @@ private:
     QPoint ellipse_;
     QVector<int> Stations;
     bool isEdit;
-    float minDistance;
+    bool permision;
+    float minDistance = INFINITY;
     int closestIndex = -1;
 
 protected:
