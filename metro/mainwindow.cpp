@@ -86,6 +86,29 @@ void MainWindow::mouseReleaseEvent(QMouseEvent *event)
     }
 }
 
+float dot[2]; // точка пересечения
+bool cross(float x1, float y1, float x2, float y2, float x3, float y3, float x4, float y4)
+{
+    float n;
+    if (y2 - y1 != 0) { // a(y)
+        float q = (x2 - x1) / (y1 - y2);
+        float sn = (x3 - x4) + (y3 - y4) * q;
+        if (!sn) {
+            return 0;
+        }                                     // c(x) + c(y)*q
+        float fn = (x3 - x1) + (y3 - y1) * q; // b(x) + b(y)*q
+        n = fn / sn;
+    } else {
+        if (!(y3 - y4)) {
+            return 0;
+        }                          // b(y)
+        n = (y3 - y1) / (y3 - y4); // c(y)/b(y)
+    }
+    dot[0] = x3 + (x4 - x3) * n; // x3 + (-b(x))*n
+    dot[1] = y3 + (y4 - y3) * n; // y3 +(-b(y))*n
+    return 1;
+}
+
 void MainWindow::paintEvent(QPaintEvent *)
 {
     QPainter painter(this);
