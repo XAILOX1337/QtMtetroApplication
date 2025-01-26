@@ -1,12 +1,12 @@
 #include "mainwindow.h"
 #include <QCursor>
+#include <QLineF>
 #include <QVector>
 #include <math.h>
-
-// СЃРґРµР»Р°Р» РєР»РёРјРµРЅС‚СЊРµРІ РѕР»РµРі Рё РџРѕР»СЏРє
+//
 #include <QMouseEvent>
 #include "ui_mainwindow.h"
-// (РєРѕРЅСЃС‚СЂСѓРєС‚РѕСЂ РєР»Р°СЃСЃР°) РЅРёР¶Рµ СЃРѕР·РґР°РµС‚ С‚Рѕ С‡С‚Рѕ РІ РЅРµР№ РЅР°РїРёСЃР°РЅРѕ РїСЂРё СЃС‚Р°СЂС‚Рµ РїСЂРёР»РѕР¶РµРЅРёСЏ
+//
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
@@ -18,11 +18,11 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->EditButton, &QPushButton::clicked, this, &MainWindow::on_EditButton_clicked);
 }
 
-QVector<int> Stations;
+QVector<int> RedStations;
 void MainWindow::on_EditButton_clicked()
 {
     qDebug() << "Button has been pressed";
-    isEdit = !isEdit; // РџРµСЂРµРєР»СЋС‡Р°РµРј СЂРµР¶РёРј СЂРµРґР°РєС‚РёСЂРѕРІР°РЅРёСЏ
+    isEdit = !isEdit; //
 }
 
 void MainWindow::mousePressEvent(QMouseEvent *event)
@@ -30,32 +30,57 @@ void MainWindow::mousePressEvent(QMouseEvent *event)
     int px = event->pos().x();
     int py = event->pos().y();
 
-    if (!isEdit) {
-        // Р”РѕР±Р°РІР»СЏРµРј РЅРѕРІСѓСЋ С‚РѕС‡РєСѓ С‚РѕР»СЊРєРѕ РІ СЂРµР¶РёРјРµ РґРѕР±Р°РІР»РµРЅРёСЏ
-        Stations.push_back(px);
-        Stations.push_back(py);
-        repaint(); // РёР»Рё update()
-    } else {
-        // Р’ СЂРµР¶РёРјРµ СЂРµРґР°РєС‚РёСЂРѕРІР°РЅРёСЏ РёС‰РµРј Р±Р»РёР¶Р°Р№С€СѓСЋ С‚РѕС‡РєСѓ
-        closestIndex = -1; // РЎР±СЂР°СЃС‹РІР°РµРј РёРЅРґРµРєСЃ Р±Р»РёР¶Р°Р№С€РµР№ С‚РѕС‡РєРё
-        minDistance = 50;  // РЎР±СЂР°СЃС‹РІР°РµРј РјРёРЅРёРјР°Р»СЊРЅРѕРµ СЂР°СЃСЃС‚РѕСЏРЅРёРµ
+    if (!isEdit && RedStations.size() >= 6) {
+        bool canAddStation = true; // Флаг для проверки возможности добавления станции
 
-        for (int i = 0; i < Stations.size(); i += 2) {
-            float distance_to_click = sqrt(pow(px - Stations[i], 2) + pow(py - Stations[i + 1], 2));
+        for (int i = 0; i <= RedStations.size() - 5; i += 2) {
+            QPointF p1(RedStations[RedStations.size() - 2], RedStations[RedStations.size() - 1]);
+            QPointF q1(px, py);
+            QPointF p2(RedStations[i], RedStations[i + 1]);
+            QPointF q2(RedStations[i + 2], RedStations[i + 3]);
+
+            if (areLinesIntersecting(p1, q1, p2, q2)) {
+                canAddStation = false; // Если пересекается, устанавливаем флаг в false
+                ui->label_3->setText(
+                    QString("Paths cross! Please place the station in a different location!"));
+                break; // Выходим из цикла, так как уже нашли пересечение
+            }
+        }
+
+        // Если не было пересечений, добавляем новую станцию
+        if (canAddStation) {
+            RedStations.push_back(px);
+            RedStations.push_back(py);
+            ui->label_3->setText(QString("The station was successfully placed!"));
+            repaint();
+        }
+
+    } else if (!isEdit && RedStations.size() < 6) {
+        RedStations.push_back(px);
+        RedStations.push_back(py);
+        ui->label_3->setText(QString("The station was successfully placed!"));
+        repaint();
+    } else {
+        closestIndex = -1;
+        minDistance = 50;
+
+        for (int i = 0; i < RedStations.size(); i += 2) {
+            float distance_to_click = sqrt(pow(px - RedStations[i], 2)
+                                           + pow(py - RedStations[i + 1], 2));
             qDebug() << "Distance to point:" << distance_to_click;
 
-            // РџСЂРѕРІРµСЂСЏРµРј, СЏРІР»СЏРµС‚СЃСЏ Р»Рё С‚РµРєСѓС‰РµРµ СЂР°СЃСЃС‚РѕСЏРЅРёРµ РјРёРЅРёРјР°Р»СЊРЅС‹Рј
             if (distance_to_click < minDistance) {
-                minDistance = distance_to_click; // РћР±РЅРѕРІР»СЏРµРј РјРёРЅРёРјР°Р»СЊРЅРѕРµ СЂР°СЃСЃС‚РѕСЏРЅРёРµ
-                closestIndex = i;                // РЎРѕС…СЂР°РЅСЏРµРј РёРЅРґРµРєСЃ Р±Р»РёР¶Р°Р№С€РµР№ С‚РѕС‡РєРё
+                minDistance = distance_to_click;
+                closestIndex = i;
             }
         }
 
         if (closestIndex != -1) {
-            qDebug() << "Nearest point:" << Stations[closestIndex] << Stations[closestIndex + 1];
+            qDebug() << "Nearest point:" << RedStations[closestIndex]
+                     << RedStations[closestIndex + 1];
             qDebug() << "min distance:" << minDistance;
         } else {
-            qDebug() << "No points in Stations.";
+            qDebug() << "No points in RedStations.";
         }
     }
 }
@@ -65,10 +90,30 @@ void MainWindow::mouseMoveEvent(QMouseEvent *event)
     int px = event->pos().x();
     int py = event->pos().y();
     if (isEdit && closestIndex != -1) {
-        // РћР±РЅРѕРІР»СЏРµРј РєРѕРѕСЂРґРёРЅР°С‚С‹ Р±Р»РёР¶Р°Р№С€РµР№ С‚РѕС‡РєРё С‚РѕР»СЊРєРѕ РІ СЂРµР¶РёРјРµ СЂРµРґР°РєС‚РёСЂРѕРІР°РЅРёСЏ
-        Stations[closestIndex] = px;
-        Stations[closestIndex + 1] = py;
-        repaint(); // РёР»Рё update()
+        bool canAddStation = true; // Флаг для проверки возможности добавления станции
+
+        for (int i = 0; i <= RedStations.size() - 5; i += 2) {
+            QPointF p1(RedStations[RedStations.size() - 2] + 10,
+                       RedStations[RedStations.size() - 1] + 10);
+            QPointF q1(px + 10, py + 10);
+            QPointF p2(RedStations[i] + 10, RedStations[i + 1] + 10);
+            QPointF q2(RedStations[i + 2] + 10, RedStations[i + 3] + 10);
+
+            if (areLinesIntersecting(p1, q1, p2, q2)) {
+                canAddStation = false; // Если пересекается, устанавливаем флаг в false
+                ui->label_3->setText(
+                    QString("Paths cross! Please place the station in a different location!"));
+                break; // Выходим из цикла, так как уже нашли пересечение
+            }
+        }
+
+        // Если не было пересечений, добавляем новую станцию
+        if (canAddStation) {
+            RedStations[closestIndex] = px;
+            RedStations[closestIndex + 1] = py;
+            ui->label_3->setText(QString("The station was successfully placed!"));
+            repaint();
+        }
     }
 }
 
@@ -80,49 +125,32 @@ void MainWindow::mouseReleaseEvent(QMouseEvent *event)
         ui->label->setText(QString("x = %1").arg(px));
         ui->label_2->setText(QString("y = %1").arg(py));
 
-        // Р”РѕР±Р°РІР»СЏРµРј РЅРѕРІСѓСЋ С‚РѕС‡РєСѓ С‚РѕР»СЊРєРѕ РІ СЂРµР¶РёРјРµ РґРѕР±Р°РІР»РµРЅРёСЏ
-
-        repaint(); // РёР»Рё update()
+        repaint();
     }
 }
 
-float dot[2]; // точка пересечения
-bool cross(float x1, float y1, float x2, float y2, float x3, float y3, float x4, float y4)
+bool MainWindow::areLinesIntersecting(QPointF p1, QPointF q1, QPointF p2, QPointF q2)
 {
-    float n;
-    if (y2 - y1 != 0) { // a(y)
-        float q = (x2 - x1) / (y1 - y2);
-        float sn = (x3 - x4) + (y3 - y4) * q;
-        if (!sn) {
-            return 0;
-        }                                     // c(x) + c(y)*q
-        float fn = (x3 - x1) + (y3 - y1) * q; // b(x) + b(y)*q
-        n = fn / sn;
-    } else {
-        if (!(y3 - y4)) {
-            return 0;
-        }                          // b(y)
-        n = (y3 - y1) / (y3 - y4); // c(y)/b(y)
-    }
-    dot[0] = x3 + (x4 - x3) * n; // x3 + (-b(x))*n
-    dot[1] = y3 + (y4 - y3) * n; // y3 +(-b(y))*n
-    return 1;
+    QLineF line1(p1, q1);
+    QLineF line2(p2, q2);
+
+    return line1.intersects(line2, nullptr) == QLineF::BoundedIntersection;
 }
 
 void MainWindow::paintEvent(QPaintEvent *)
 {
     QPainter painter(this);
-    // Р РёСЃСѓРµРј РєСЂСѓР¶РѕС‡РєРё Рё Р»РёРЅРёРё РјРµР¶РґСѓ РЅРёРјРё
-    for (int i = 0; i < Stations.size(); i += 2) {
-        painter.setPen(QPen(QColor(79, 106, 25), 1, Qt::SolidLine, Qt::FlatCap, Qt::MiterJoin));
-        painter.setBrush(QColor(0, 100, 100));
-        painter.drawEllipse(Stations[i], Stations[i + 1], 20, 20);
+
+    for (int i = 0; i < RedStations.size(); i += 2) {
+        painter.setPen(QPen(QColor(255, 0, 25), 1, Qt::SolidLine, Qt::FlatCap, Qt::MiterJoin));
+        painter.setBrush(QColor(255, 0, 25));
+        painter.drawEllipse(RedStations[i], RedStations[i + 1], 20, 20);
         if (i >= 2) {
-            painter.setPen(QPen(QColor(0, 100, 100), 5, Qt::SolidLine, Qt::FlatCap, Qt::MiterJoin));
-            painter.drawLine(Stations[i - 2] + 10,  // x 1-РѕР№ С‚РѕС‡РєРё
-                             Stations[i - 1] + 10,  // y 1-РѕР№ С‚РѕС‡РєРё
-                             Stations[i] + 10,      // x 2-РѕР№ С‚РѕС‡РєРё
-                             Stations[i + 1] + 10); // y 2-РѕР№ С‚РѕС‡РєРё
+            painter.setPen(QPen(QColor(255, 0, 25), 5, Qt::SolidLine, Qt::FlatCap, Qt::MiterJoin));
+            painter.drawLine(RedStations[i - 2] + 10,
+                             RedStations[i - 1] + 10,
+                             RedStations[i] + 10,
+                             RedStations[i + 1] + 10);
         }
     }
 }

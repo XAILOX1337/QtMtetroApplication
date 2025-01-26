@@ -23,7 +23,7 @@ private:
 
 private:
     QPoint ellipse_;
-    QVector<int> Stations;
+    QVector<int> RedStations;
     bool isEdit;
     bool permision;
     float minDistance = INFINITY;
@@ -35,14 +35,7 @@ protected:
     virtual void mousePressEvent(QMouseEvent *);
     virtual void mouseMoveEvent(QMouseEvent *);
     void on_EditButton_clicked();
-    bool cross(float x1, float y1, float x2, float y2, float x3, float y3, float x4, float y4);
+    bool areLinesIntersecting(QPointF p1, QPointF q1, QPointF p2, QPointF q2);
 };
-/* На всякий случай
-class Click
-{
-public:
-    int onClick(int x, int y);
-};
-*/
 
 #endif // MAINWINDOW_H

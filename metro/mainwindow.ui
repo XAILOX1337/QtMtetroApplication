@@ -17,8 +17,8 @@
    <widget class="QLabel" name="label">
     <property name="geometry">
      <rect>
-      <x>200</x>
-      <y>30</y>
+      <x>630</x>
+      <y>40</y>
       <width>49</width>
       <height>16</height>
      </rect>
@@ -30,8 +30,8 @@
    <widget class="QLabel" name="label_2">
     <property name="geometry">
      <rect>
-      <x>280</x>
-      <y>30</y>
+      <x>630</x>
+      <y>20</y>
       <width>49</width>
       <height>16</height>
      </rect>
@@ -46,14 +46,132 @@
     </property>
     <property name="geometry">
      <rect>
-      <x>729</x>
-      <y>20</y>
-      <width>141</width>
-      <height>24</height>
+      <x>730</x>
+      <y>10</y>
+      <width>161</width>
+      <height>31</height>
      </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">QPushButton {
+    background-color: #4CAF50; /* Зеленый фон */
+    color: white;             /* Белый текст */
+    border: 2px solid #2E7D32; /* Зелёная рамка */
+    border-radius: 10px;       /* Скругленные углы */
+    font-size: 12px;          /* Размер шрифта */
+    padding: 5px 10px;        /* Отступы */
+}
+
+QPushButton:hover {
+    background-color: #45a049; /* Фон при наведении */
+}
+
+QPushButton:pressed {
+    background-color: #2E7D32; /* Фон при нажатии */
+}</string>
     </property>
     <property name="text">
      <string>Режим редактирования</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="EditButton_2">
+    <property name="enabled">
+     <bool>true</bool>
+    </property>
+    <property name="geometry">
+     <rect>
+      <x>730</x>
+      <y>90</y>
+      <width>161</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">QPushButton {
+    background-color: 	#4169E1; /* Синий фон */
+    color: white;             /* Белый текст */
+    border: 2px solid 	#1E90FF; /* Голубоватая рамка */
+    border-radius: 10px;       /* Скругленные углы */
+    font-size: 12px;          /* Размер шрифта */
+    padding: 5px 10px;        /* Отступы */
+}
+
+QPushButton:hover {
+    background-color: 	#0000CD; /* Фон при наведении */
+}
+
+QPushButton:pressed {
+    background-color: 	#00008B; /* Фон при нажатии */
+}</string>
+    </property>
+    <property name="text">
+     <string>Синяя ветка</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="EditButton_3">
+    <property name="enabled">
+     <bool>true</bool>
+    </property>
+    <property name="geometry">
+     <rect>
+      <x>730</x>
+      <y>50</y>
+      <width>161</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">QPushButton {
+    background-color: 	#8B0000; /* Красный фон */
+    color: white;             /* Белый текст */
+    border: 2px solid 	#800000; /* Темно красная рамка */
+    border-radius: 10px;       /* Скругленные углы */
+    font-size: 12px;          /* Размер шрифта */
+    padding: 5px 10px;        /* Отступы */
+}
+
+QPushButton:hover {
+    background-color: 	#FF0000; /* Фон при наведении */
+}
+
+QPushButton:pressed {
+    background-color: #FF6347; /* Фон при нажатии */
+}</string>
+    </property>
+    <property name="text">
+     <string>Красная ветка</string>
+    </property>
+   </widget>
+   <widget class="Line" name="line">
+    <property name="geometry">
+     <rect>
+      <x>710</x>
+      <y>0</y>
+      <width>16</width>
+      <height>1041</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">QFrame {
+    background-color: black; /* Цвет линии */
+    width: 1px;              /* Ширина линии */
+}</string>
+    </property>
+    <property name="orientation">
+     <enum>Qt::Orientation::Vertical</enum>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_3">
+    <property name="geometry">
+     <rect>
+      <x>20</x>
+      <y>510</y>
+      <width>681</width>
+      <height>61</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;&lt;span style=&quot; font-size:20pt; color:#ff0000;&quot;&gt;&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
     </property>
    </widget>
   </widget>
