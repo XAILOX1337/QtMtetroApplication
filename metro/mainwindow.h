@@ -16,6 +16,7 @@ class MainWindow : public QMainWindow
 
 public:
     MainWindow(QWidget *parent = nullptr);
+
     ~MainWindow();
 
 private:
@@ -24,6 +25,8 @@ private:
 private:
     QPoint ellipse_;
     QVector<int> RedStations;
+    QVector<int> BlueStations;
+
     bool isEdit;
     bool permision;
     float minDistance = INFINITY;
@@ -35,6 +38,7 @@ protected:
     virtual void mousePressEvent(QMouseEvent *);
     virtual void mouseMoveEvent(QMouseEvent *);
     void on_EditButton_clicked();
+    QPoint TempPoint;
     bool areLinesIntersecting(QPointF p1, QPointF q1, QPointF p2, QPointF q2);
 };
 
