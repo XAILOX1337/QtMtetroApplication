@@ -1,9 +1,11 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
+#include <QMainWindow>
+#include <QMap>
+#include <QPainter>
+#include <QVBoxLayout>
 #include <QVector>
 
-#include <QMainWindow>
-#include <QPainter>
 QT_BEGIN_NAMESPACE
 namespace Ui {
 class MainWindow;
@@ -16,30 +18,29 @@ class MainWindow : public QMainWindow
 
 public:
     MainWindow(QWidget *parent = nullptr);
-
     ~MainWindow();
 
 private:
     Ui::MainWindow *ui;
-
-private:
-    QPoint ellipse_;
-    QVector<int> RedStations;
-    QVector<int> BlueStations;
-
-    bool isEdit;
-    bool permision;
+    QMap<QString, QVector<QPoint>> branches; // Хранилище веток
+    QString activeBranch = "Red";            // Текущая активная ветка
+    bool isEdit = false;
+    int stationCounter = 1;
     float minDistance = INFINITY;
     int closestIndex = -1;
+
+    void createBranchButton(const QString &branchName);
+    void switchActiveBranch(const QString &branchName);
 
 protected:
     void paintEvent(QPaintEvent *) override;
     void mouseReleaseEvent(QMouseEvent *event) override;
-    virtual void mousePressEvent(QMouseEvent *);
-    virtual void mouseMoveEvent(QMouseEvent *);
-    void on_EditButton_clicked();
-    QPoint TempPoint;
+    void mousePressEvent(QMouseEvent *event) override;
+    void mouseMoveEvent(QMouseEvent *event) override;
     bool areLinesIntersecting(QPointF p1, QPointF q1, QPointF p2, QPointF q2);
+
+    void on_EditButton_clicked();
+    void on_addStationButton_clicked();
 };
 
 #endif // MAINWINDOW_H

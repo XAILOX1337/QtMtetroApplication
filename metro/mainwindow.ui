@@ -74,40 +74,6 @@ QPushButton:pressed {
      <string>Режим редактирования</string>
     </property>
    </widget>
-   <widget class="QPushButton" name="EditButton_2">
-    <property name="enabled">
-     <bool>true</bool>
-    </property>
-    <property name="geometry">
-     <rect>
-      <x>730</x>
-      <y>90</y>
-      <width>161</width>
-      <height>31</height>
-     </rect>
-    </property>
-    <property name="styleSheet">
-     <string notr="true">QPushButton {
-    background-color: 	#4169E1; /* Синий фон */
-    color: white;             /* Белый текст */
-    border: 2px solid 	#1E90FF; /* Голубоватая рамка */
-    border-radius: 10px;       /* Скругленные углы */
-    font-size: 12px;          /* Размер шрифта */
-    padding: 5px 10px;        /* Отступы */
-}
-
-QPushButton:hover {
-    background-color: 	#0000CD; /* Фон при наведении */
-}
-
-QPushButton:pressed {
-    background-color: 	#00008B; /* Фон при нажатии */
-}</string>
-    </property>
-    <property name="text">
-     <string>Синяя ветка</string>
-    </property>
-   </widget>
    <widget class="QPushButton" name="EditButton_3">
     <property name="enabled">
      <bool>true</bool>
@@ -172,6 +138,19 @@ QPushButton:pressed {
     </property>
     <property name="text">
      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;&lt;span style=&quot; font-size:20pt; color:#ff0000;&quot;&gt;&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="addStationButton">
+    <property name="geometry">
+     <rect>
+      <x>740</x>
+      <y>523</y>
+      <width>141</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Добавить ветку</string>
     </property>
    </widget>
   </widget>

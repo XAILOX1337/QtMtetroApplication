@@ -11,34 +11,69 @@
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
-    , isEdit(false)
-    , permision(true)
-
 {
     ui->setupUi(this);
+    branches["Red"] = QVector<QPoint>(); // Инициализация красной ветки
+
     connect(ui->EditButton, &QPushButton::clicked, this, &MainWindow::on_EditButton_clicked);
+    connect(ui->addStationButton,
+            &QPushButton::clicked,
+            this,
+            &MainWindow::on_addStationButton_clicked);
+    connect(ui->EditButton_3, &QPushButton::clicked, this, [this]() { switchActiveBranch("Red"); });
 }
 
-QVector<int> RedStations;
+void MainWindow::createBranchButton(const QString &branchName)
+{
+    QPushButton *branchBtn = new QPushButton(branchName, this);
+    branchBtn->setGeometry(730, 10 + (branches.size() * 40), 160, 30);
+    branchBtn->setStyleSheet(
+        "QPushButton{"
+        "background-color: #80000;"                        /* Красный фон */
+        "color: white;"                                    /* Белый текст */
+        "border: 2px solid #800000;"                       /* Темно красная рамка */
+        "border-radius: 10px;"                             /* Скругленные углы */
+        "font-size: 12px;"                                 /* Размер шрифта */
+        "padding: 5px 10px;}"                              /* Отступы */
+        "QPushButton:pressed {background-color: #0000FF;}" /* Фон при нажатии (синий) */
+    );
+    connect(branchBtn, &QPushButton::clicked, this, [this, branchName]() {
+        switchActiveBranch(branchName);
+    });
+    branchBtn->show();
+}
+void MainWindow::switchActiveBranch(const QString &branchName)
+{
+    activeBranch = branchName;
+    repaint();
+}
+void MainWindow::on_addStationButton_clicked()
+{
+    QString newBranchName = QString("Branch %1").arg(stationCounter++);
+    branches[newBranchName] = QVector<QPoint>();
+    createBranchButton(newBranchName);
+}
 void MainWindow::on_EditButton_clicked()
 {
-    qDebug() << "Button has been pressed";
-    isEdit = !isEdit; //
+    qDebug() << "Button has been pressed!!!!!!!!!!!";
+    isEdit = !isEdit;
 }
+
 QPoint TempPoint;
 void MainWindow::mousePressEvent(QMouseEvent *event)
 {
     int px = event->pos().x();
     int py = event->pos().y();
+    QVector<QPoint> &stations = branches[activeBranch];
 
-    if (!isEdit && RedStations.size() >= 6) {
+    if (!isEdit && stations.size() >= 4) {
         bool canAddStation = true; // Флаг для проверки возможности добавления станции
 
-        for (int i = 0; i <= RedStations.size() - 5; i += 2) {
-            QPointF p1(RedStations[RedStations.size() - 2], RedStations[RedStations.size() - 1]);
+        for (int i = 1; i < stations.size(); i += 1) {
+            QPointF p1(stations.last());
             QPointF q1(px, py);
-            QPointF p2(RedStations[i], RedStations[i + 1]);
-            QPointF q2(RedStations[i + 2], RedStations[i + 3]);
+            QPointF p2(stations[i - 1]);
+            QPointF q2(stations[i]);
 
             if (areLinesIntersecting(p1, q1, p2, q2)) {
                 canAddStation = false; // Если пересекается, устанавливаем флаг в false
@@ -53,32 +88,24 @@ void MainWindow::mousePressEvent(QMouseEvent *event)
             repaint();
         }
 
-    } else if (!isEdit && RedStations.size() < 6) {
+    } else if (!isEdit && stations.size() < 4) {
         TempPoint.setX(px);
         TempPoint.setY(py);
         ui->label_3->setText(QString("The station was successfully placed!"));
         repaint();
     } else {
         closestIndex = -1;
-        minDistance = 50;
-
-        for (int i = 0; i < RedStations.size(); i += 2) {
-            float distance_to_click = sqrt(pow(px - RedStations[i], 2)
-                                           + pow(py - RedStations[i + 1], 2));
+        minDistance = 100;
+        qDebug() << "Dis point:";
+        for (int i = 0; i < stations.size(); i += 1) {
+            float distance_to_click = sqrt(pow(px - stations[i].x(), 2)
+                                           + pow(py - stations[i].y(), 2));
             qDebug() << "Distance to point:" << distance_to_click;
 
             if (distance_to_click < minDistance) {
                 minDistance = distance_to_click;
                 closestIndex = i;
             }
-        }
-
-        if (closestIndex != -1) {
-            qDebug() << "Nearest point:" << RedStations[closestIndex]
-                     << RedStations[closestIndex + 1];
-            qDebug() << "min distance:" << minDistance;
-        } else {
-            qDebug() << "No points in RedStations.";
         }
     }
 }
@@ -87,15 +114,14 @@ void MainWindow::mouseMoveEvent(QMouseEvent *event)
 {
     int px = event->pos().x();
     int py = event->pos().y();
-
+    QVector<QPoint> &stations = branches[activeBranch];
     if (isEdit && closestIndex != -1) {
         bool canAddStation = true; // Флаг для проверки возможности добавления станции
-        for (int i = 0; i <= RedStations.size() - 5; i += 2) {
-            QPointF p1(RedStations[RedStations.size() - 2] + 10,
-                       RedStations[RedStations.size() - 1] + 10);
+        for (int i = 0; i < stations.size() - 2; i += 1) {
+            QPointF p1(stations.last() + QPoint(10, 10));
             QPointF q1(px + 10, py + 10);
-            QPointF p2(RedStations[i] + 10, RedStations[i + 1] + 10);
-            QPointF q2(RedStations[i + 2] + 10, RedStations[i + 3] + 10);
+            QPointF p2(stations[i] + QPoint(10, 10));
+            QPointF q2(stations[i + 1] + QPoint(10, 10));
 
             if (areLinesIntersecting(p1, q1, p2, q2)) {
                 canAddStation = false; // Если пересекается, устанавливаем флаг в false
@@ -107,8 +133,8 @@ void MainWindow::mouseMoveEvent(QMouseEvent *event)
 
         // Если не было пересечений, добавляем новую станцию
         if (canAddStation) {
-            RedStations[closestIndex] = px;
-            RedStations[closestIndex + 1] = py;
+            stations[closestIndex].setX(px);
+            stations[closestIndex].setY(py);
             ui->label_3->setText(QString("The station was successfully placed!"));
             repaint();
         }
@@ -118,41 +144,36 @@ void MainWindow::mouseMoveEvent(QMouseEvent *event)
         ui->label_3->setText(QString("The station was successfully placed!"));
         repaint();
     }
-    }
+}
 
 void MainWindow::mouseReleaseEvent(QMouseEvent *event)
 {
     int px = event->pos().x();
     int py = event->pos().y();
-
-    if (!isEdit && RedStations.size() >= 6) {
+    QVector<QPoint> &stations = branches[activeBranch];
+    if (!isEdit && stations.size() >= 3) {
         bool canAddStation = true; // Флаг для проверки возможности добавления станции
 
-        for (int i = 0; i <= RedStations.size() - 5; i += 2) {
-            QPointF p1(RedStations[RedStations.size() - 2], RedStations[RedStations.size() - 1]);
+        for (int i = 0; i < stations.size() - 2; i += 1) {
             QPointF q1(px, py);
-            QPointF p2(RedStations[i], RedStations[i + 1]);
-            QPointF q2(RedStations[i + 2], RedStations[i + 3]);
 
-            if (areLinesIntersecting(p1, q1, p2, q2)) {
+            if (areLinesIntersecting(stations.last(), q1, stations[i], stations[i + 1])) {
                 canAddStation = false; // Если пересекается, устанавливаем флаг в false
-                ui->label_3->setText(
-                    QString("Paths cross! Please place the station in a different location!"));
+                ui->label_3->setText(QString("Pathscation!"));
                 break; // Выходим из цикла, так как уже нашли пересечение
             }
         }
 
         // Если не было пересечений, добавляем новую станцию
         if (canAddStation) {
-            RedStations.push_back(px);
-            RedStations.push_back(py);
+            stations.push_back(QPoint(px, py));
             ui->label_3->setText(QString("The station was successfully placed!"));
             repaint();
         }
 
-    } else if (!isEdit && RedStations.size() < 6) {
-        RedStations.push_back(px);
-        RedStations.push_back(py);
+    } else if (!isEdit && stations.size() < 3) {
+        stations.push_back(QPoint(px, py));
+
         ui->label_3->setText(QString("The station was successfully placed!"));
         ui->label_3->setText(QString("The station was successfully placed!"));
         repaint();
@@ -171,24 +192,41 @@ void MainWindow::paintEvent(QPaintEvent *)
 {
     QPainter painter(this);
 
-    for (int i = 0; i < RedStations.size(); i += 2) {
-        painter.setPen(QPen(QColor(255, 0, 25), 1, Qt::SolidLine, Qt::FlatCap, Qt::MiterJoin));
-        painter.setBrush(QColor(255, 0, 25));
-        painter.drawEllipse(RedStations[i], RedStations[i + 1], 20, 20);
-        if (i >= 2) {
-            painter.setPen(QPen(QColor(255, 0, 25), 5, Qt::SolidLine, Qt::FlatCap, Qt::MiterJoin));
-            painter.drawLine(RedStations[i - 2] + 10,
-                             RedStations[i - 1] + 10,
-                             RedStations[i] + 10,
-                             RedStations[i + 1] + 10);
+    // Перебираем все ветки
+    QMapIterator<QString, QVector<QPoint>> it(branches);
+    while (it.hasNext()) {
+        it.next();
+        const QVector<QPoint> &stations = it.value();
+        bool isActiveBranch = (it.key() == activeBranch);
+
+        // Настройка цвета для ветки
+        QColor branchColor = isActiveBranch
+                                 ? QColor(255, 0, 25)
+                                 : QColor(0, 0, 255); // Активная — красная, остальные — синие
+
+        // Отрисовка станций и линий
+        painter.setPen(QPen(branchColor, 1, Qt::SolidLine));
+        painter.setBrush(branchColor);
+
+        for (int i = 0; i < stations.size(); ++i) {
+            painter.drawEllipse(stations[i].x(), stations[i].y(), 20, 20);
+            if (i > 0) {
+                painter.setPen(QPen(branchColor, 5, Qt::SolidLine));
+                painter.drawLine(stations[i - 1].x() + 10,
+                                 stations[i - 1].y() + 10,
+                                 stations[i].x() + 10,
+                                 stations[i].y() + 10);
+            }
         }
-    }
-    if (RedStations.size() >= 2 && isEdit == false) {
-        painter.setPen(QPen(QColor(255, 0, 25), 2, Qt::DashLine, Qt::FlatCap, Qt::MiterJoin));
-        painter.drawLine(RedStations[RedStations.size() - 2] + 10,
-                         RedStations[RedStations.size() - 1] + 10,
-                         TempPoint.x() + 10,
-                         TempPoint.y() + 10);
+
+        // Отрисовка временной линии для активной ветки
+        if (isActiveBranch && !isEdit && stations.size() >= 1) {
+            painter.setPen(QPen(branchColor, 2, Qt::DashLine));
+            painter.drawLine(stations.last().x() + 10,
+                             stations.last().y() + 10,
+                             TempPoint.x() + 10,
+                             TempPoint.y() + 10);
+        }
     }
 }
 MainWindow::~MainWindow()
