@@ -75,7 +75,7 @@ void MainWindow::mousePressEvent(QMouseEvent *event)
             QPointF p2(stations[i - 1]);
             QPointF q2(stations[i]);
 
-            if (areLinesIntersecting(p1, q1, p2, q2)) {
+            if (areLinesIntersecting(p1, q1)) {
                 canAddStation = false; // Если пересекается, устанавливаем флаг в false
                 ui->label_3->setText(
                     QString("Paths cross! Please place the station in a different location!"));
@@ -123,7 +123,7 @@ void MainWindow::mouseMoveEvent(QMouseEvent *event)
             QPointF p2(stations[i] + QPoint(10, 10));
             QPointF q2(stations[i + 1] + QPoint(10, 10));
 
-            if (areLinesIntersecting(p1, q1, p2, q2)) {
+            if (areLinesIntersecting(p1, q1)) {
                 canAddStation = false; // Если пересекается, устанавливаем флаг в false
                 ui->label_3->setText(
                     QString("Paths cross! Please place the station in a different location!"));
@@ -151,13 +151,13 @@ void MainWindow::mouseReleaseEvent(QMouseEvent *event)
     int px = event->pos().x();
     int py = event->pos().y();
     QVector<QPoint> &stations = branches[activeBranch];
-    if (!isEdit && stations.size() >= 3) {
+    if (!isEdit && stations.size() >= 2) {
         bool canAddStation = true; // Флаг для проверки возможности добавления станции
 
         for (int i = 0; i < stations.size() - 2; i += 1) {
             QPointF q1(px, py);
 
-            if (areLinesIntersecting(stations.last(), q1, stations[i], stations[i + 1])) {
+            if (areLinesIntersecting(stations.last(), q1)) {
                 canAddStation = false; // Если пересекается, устанавливаем флаг в false
                 ui->label_3->setText(QString("Pathscation!"));
                 break; // Выходим из цикла, так как уже нашли пересечение
@@ -180,14 +180,36 @@ void MainWindow::mouseReleaseEvent(QMouseEvent *event)
     }
 }
 
-bool MainWindow::areLinesIntersecting(QPointF p1, QPointF q1, QPointF p2, QPointF q2)
+bool MainWindow::areLinesIntersecting(QPointF p1, QPointF q1)
 {
-    QLineF line1(p1, q1);
-    QLineF line2(p2, q2);
+    QMapIterator<QString, QVector<QPoint>> it(branches);
+    while (it.hasNext()) {
+        it.next();
+        const QVector<QPoint> &stations = it.value(); // Список станций в ветке
 
-    return line1.intersects(line2, nullptr) == QLineF::BoundedIntersection;
+        // Перебираем все линии в текущей ветке
+        for (int i = 1; i < stations.size() - 1; ++i) {
+            QPointF p2(stations[i - 1]); // Начало линии
+            QPointF q2(stations[i]);     // Конец линии
+
+            // Проверяем пересечение новой линии (p1, q1) с текущей линией (p2, q2)
+            QLineF line1(p1, q1);
+            QLineF line2(p2, q2);
+
+            if (line1.intersects(line2, nullptr) == QLineF::BoundedIntersection) {
+                qDebug() << "Intersection found between lines:"
+                         << "(" << p1.x() << "," << p1.y() << ")-(" << q1.x() << "," << q1.y()
+                         << ")"
+                         << "and"
+                         << "(" << p2.x() << "," << p2.y() << ")-(" << q2.x() << "," << q2.y()
+                         << ")";
+                return true; // Найдено пересечение
+            }
+        }
+    }
+
+    return false; // Пересечений не найдено
 }
-
 void MainWindow::paintEvent(QPaintEvent *)
 {
     QPainter painter(this);

@@ -37,7 +37,7 @@ protected:
     void mouseReleaseEvent(QMouseEvent *event) override;
     void mousePressEvent(QMouseEvent *event) override;
     void mouseMoveEvent(QMouseEvent *event) override;
-    bool areLinesIntersecting(QPointF p1, QPointF q1, QPointF p2, QPointF q2);
+    bool areLinesIntersecting(QPointF p1, QPointF q1);
 
     void on_EditButton_clicked();
     void on_addStationButton_clicked();
